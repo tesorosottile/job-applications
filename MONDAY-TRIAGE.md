@@ -31,6 +31,19 @@ Then prune `targets.md`, commit, and start the triage below.
 
 ## Every Monday: the triage (~30 min)
 
+**Open `tools/triage.html`** — double-click it, it's a local page and nothing leaves the
+machine. Click **Open tracker.csv**, point it at `pipeline/tracker.csv`, and it deals the
+`new` rows one at a time, deadline-urgent first then by fit score: Go / No buttons, reason
+chips on No, and a running count against the cap of 8. Keyboard: `G` go, `N` no, `U` undo,
+`S` save, `O` open the posting. It writes back to the same file — then commit in GitHub
+Desktop.
+
+In Chrome or Edge it edits the file in place. Any other browser gives you a download to drop
+back into `pipeline/`.
+
+The steps below are what the tool is doing — and what to do if you'd rather edit the CSV by
+hand.
+
 ### Step 1 — Deadlines first (2 min)
 Anything closing within 7 days goes to `go` or `no` immediately, before anything else. A
 perfect application submitted after the deadline is worth zero.

@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Monday Triage</title>
+<style>
+  :root {
+    --bg: #faf9f7; --surface: #ffffff; --border: #e3e0da; --text: #1f1d1a;
+    --muted: #6f6a62; --accent: #2f6f4f; --accent-soft: #e8f2ec;
+    --danger: #a33a2a; --danger-soft: #f8ebe8; --warn: #8a6d1f; --warn-soft: #fdf4dd;
+    --radius: 10px;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #171614; --surface: #201e1b; --border: #37342f; --text: #eceae6;
+      --muted: #9d968c; --accent: #6fb891; --accent-soft: #1e2f27;
+      --danger: #e08a78; --danger-soft: #33211d; --warn: #d9bb6a; --warn-soft: #2e2818;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #171614; --surface: #201e1b; --border: #37342f; --text: #eceae6;
+    --muted: #9d968c; --accent: #6fb891; --accent-soft: #1e2f27;
+    --danger: #e08a78; --danger-soft: #33211d; --warn: #d9bb6a; --warn-soft: #2e2818;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--bg); color: var(--text);
+    font: 15px/1.55 ui-sans-serif, -apple-system, "Segoe UI", system-ui, sans-serif;
+    padding: 0 16px 64px;
+  }
+  .wrap { max-width: 740px; margin: 0 auto; }
+  header { padding: 28px 0 16px; }
+  h1 { font-size: 21px; margin: 0 0 4px; letter-spacing: -0.01em; }
+  .sub { color: var(--muted); font-size: 13.5px; margin: 0; }
+  .bar {
+    position: sticky; top: 0; z-index: 10; background: var(--bg);
+    padding: 12px 0; border-bottom: 1px solid var(--border);
+    display: flex; gap: 10px; align-items: center; flex-wrap: wrap;
+  }
+  button {
+    font: inherit; padding: 7px 13px; border-radius: 8px; cursor: pointer;
+    border: 1px solid var(--border); background: var(--surface); color: var(--text);
+  }
+  button:hover:not(:disabled) { border-color: var(--muted); }
+  button:disabled { opacity: .45; cursor: default; }
+  .primary { background: var(--accent); border-color: var(--accent); color: #fff; font-weight: 600; }
+  :root[data-theme="dark"] .primary, @media (prefers-color-scheme: dark) { }
+  .counter { margin-left: auto; font-variant-numeric: tabular-nums; font-size: 13.5px; color: var(--muted); }
+  .counter strong { color: var(--text); }
+  .counter.over strong { color: var(--danger); }
+  .card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 20px; margin: 18px 0;
+  }
+  .role { font-size: 18px; font-weight: 650; margin: 0 0 2px; letter-spacing: -0.01em; }
+  .employer { color: var(--muted); margin: 0 0 14px; font-size: 14.5px; }
+  .meta { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 14px; }
+  .chip {
+    font-size: 12.5px; padding: 3px 9px; border-radius: 999px;
+    background: var(--bg); border: 1px solid var(--border); color: var(--muted);
+  }
+  .chip.score { background: var(--accent-soft); color: var(--accent); border-color: transparent; font-weight: 600; }
+  .chip.flag { background: var(--warn-soft); color: var(--warn); border-color: transparent; }
+  .chip.urgent { background: var(--danger-soft); color: var(--danger); border-color: transparent; font-weight: 600; }
+  .breakdown { font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 12px; color: var(--muted); margin-bottom: 14px; }
+  a.link { color: var(--accent); font-size: 13.5px; word-break: break-all; }
+  .actions { display: flex; gap: 10px; margin-top: 18px; flex-wrap: wrap; }
+  .go { background: var(--accent); border-color: var(--accent); color: #fff; font-weight: 600; flex: 1; min-width: 130px; }
+  .no { flex: 1; min-width: 130px; }
+  .reasons { margin-top: 14px; display: none; gap: 8px; flex-wrap: wrap; }
+  .reasons.show { display: flex; }
+  .reasons button { font-size: 13px; padding: 5px 11px; }
+  .test { background: var(--bg); border-radius: 8px; padding: 12px 14px; margin-top: 16px; font-size: 13.5px; color: var(--muted); }
+  .test ol { margin: 6px 0 0; padding-left: 20px; }
+  .empty { text-align: center; padding: 56px 20px; color: var(--muted); }
+  .done { background: var(--accent-soft); border-radius: var(--radius); padding: 20px; margin: 18px 0; }
+  .hint { font-size: 12.5px; color: var(--muted); margin-top: 20px; }
+  kbd { font: 11.5px ui-monospace, monospace; background: var(--bg); border: 1px solid var(--border);
+        border-radius: 4px; padding: 1px 5px; }
+  .warnbox { background: var(--warn-soft); color: var(--warn); border-radius: 8px; padding: 11px 14px; font-size: 13.5px; margin: 14px 0; }
+  .progress { height: 3px; background: var(--border); border-radius: 2px; overflow: hidden; margin-top: 10px; }
+  .progress div { height: 100%; background: var(--accent); transition: width .25s; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>Monday Triage</h1>
+    <p class="sub">Reads and writes <code>pipeline/tracker.csv</code> directly. Nothing leaves this machine.</p>
+  </header>
+
+  <div class="bar">
+    <button id="open" class="primary">Open tracker.csv</button>
+    <button id="save" disabled>Save</button>
+    <button id="undo" disabled>Undo</button>
+    <span class="counter" id="counter"></span>
+  </div>
+
+  <div id="app">
+    <div class="empty">
+      <p>Open <code>pipeline/tracker.csv</code> to start.</p>
+      <p style="font-size:13px">In Chrome or Edge the file is edited in place. In other browsers you'll get a download to drop back into the repo.</p>
+    </div>
+  </div>
+
+  <p class="hint">
+    <kbd>G</kbd> go &nbsp; <kbd>N</kbd> no &nbsp; <kbd>U</kbd> undo &nbsp; <kbd>S</kbd> save &nbsp;
+    <kbd>O</kbd> open posting in a new tab
+  </p>
+</div>
+
+<script>
+'use strict';
+
+const CAP = 8;
+const REASONS = ['seniority','language','location','domain','wouldnt-take','too-senior','too-junior','no-angle'];
+
+let fileHandle = null, headers = [], rows = [], queue = [], idx = 0, history = [], dirty = false;
+
+/* ---------- CSV ---------- */
+function parseCSV(text) {
+  text = text.replace(/^﻿/, '');
+  const out = []; let row = [], field = '', q = false;
+  for (let i = 0; i < text.length; i++) {
+    const c = text[i];
+    if (q) {
+      if (c === '"') { if (text[i+1] === '"') { field += '"'; i++; } else q = false; }
+      else field += c;
+    } else if (c === '"') q = true;
+    else if (c === ',') { row.push(field); field = ''; }
+    else if (c === '\n') { row.push(field); out.push(row); row = []; field = ''; }
+    else if (c === '\r') { /* skip */ }
+    else field += c;
+  }
+  if (field !== '' || row.length) { row.push(field); out.push(row); }
+  return out.filter(r => r.length > 1 || (r[0] || '').trim() !== '');
+}
+function esc(v) {
+  v = v == null ? '' : String(v);
+  return /[",\n\r]/.test(v) ? '"' + v.replace(/"/g, '""') + '"' : v;
+}
+function toCSV() {
+  const lines = [headers.map(esc).join(',')];
+  for (const r of rows) lines.push(headers.map(h => esc(r[h])).join(','));
+  return lines.join('\n') + '\n';
+}
+
+/* ---------- load ---------- */
+async function openFile() {
+  try {
+    if (window.showOpenFilePicker) {
+      [fileHandle] = await window.showOpenFilePicker({
+        types: [{ description: 'CSV', accept: { 'text/csv': ['.csv'] } }]
+      });
+      load(await (await fileHandle.getFile()).text());
+    } else {
+      const inp = document.createElement('input');
+      inp.type = 'file'; inp.accept = '.csv';
+      inp.onchange = async () => { fileHandle = null; load(await inp.files[0].text()); };
+      inp.click();
+    }
+  } catch (e) { if (e.name !== 'AbortError') alert('Could not open the file: ' + e.message); }
+}
+
+function load(text) {
+  const grid = parseCSV(text);
+  if (!grid.length) { alert('That file looks empty.'); return; }
+  headers = grid[0].map(h => h.trim());
+  rows = grid.slice(1).map(r => {
+    const o = {}; headers.forEach((h, i) => o[h] = r[i] === undefined ? '' : r[i]); return o;
+  });
+  const score = r => { const n = parseFloat(r.fit_score); return isNaN(n) ? -1 : n; };
+  queue = rows.filter(r => (r.status || '').trim().toLowerCase() === 'new')
+              .sort((a, b) => {
+                const da = (a.deadline||'').trim(), db = (b.deadline||'').trim();
+                const ua = urgent(da), ub = urgent(db);
+                if (ua !== ub) return ua ? -1 : 1;
+                return score(b) - score(a);
+              });
+  idx = 0; history = []; dirty = false;
+  render();
+}
+
+function urgent(d) {
+  if (!d) return false;
+  const t = Date.parse(d);
+  if (isNaN(t)) return false;
+  const days = (t - Date.now()) / 86400000;
+  return days >= 0 && days <= 7;
+}
+
+/* ---------- decisions ---------- */
+function goCount() { return rows.filter(r => (r.status||'').trim().toLowerCase() === 'go').length; }
+
+function decide(status, reason) {
+  const r = queue[idx]; if (!r) return;
+  history.push({ row: r, status: r.status, notes: r.notes });
+  r.status = status;
+  if (reason) r.notes = (r.notes ? r.notes + ' | ' : '') + reason;
+  dirty = true; idx++; render();
+}
+function undo() {
+  const h = history.pop(); if (!h) return;
+  h.row.status = h.status; h.row.notes = h.notes;
+  idx = Math.max(0, idx - 1); dirty = history.length > 0 || dirty; render();
+}
+
+/* ---------- save ---------- */
+async function save() {
+  const text = toCSV();
+  try {
+    if (fileHandle) {
+      const w = await fileHandle.createWritable();
+      await w.write(text); await w.close();
+      dirty = false; flash('Saved to tracker.csv');
+    } else {
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(new Blob([text], { type: 'text/csv' }));
+      a.download = 'tracker.csv'; a.click(); URL.revokeObjectURL(a.href);
+      dirty = false; flash('Downloaded — move it into pipeline/ replacing the old one');
+    }
+  } catch (e) { alert('Save failed: ' + e.message); }
+  render();
+}
+function flash(msg) {
+  const el = document.getElementById('counter');
+  const old = el.innerHTML; el.textContent = msg;
+  setTimeout(() => { el.innerHTML = old; }, 2600);
+}
+
+/* ---------- render ---------- */
+function render() {
+  const app = document.getElementById('app');
+  const n = goCount(), over = n > CAP;
+  document.getElementById('counter').innerHTML =
+    rows.length ? `<strong>${n}</strong> go / cap ${CAP} &nbsp;·&nbsp; ${Math.max(0, queue.length - idx)} left` : '';
+  document.getElementById('counter').className = 'counter' + (over ? ' over' : '');
+  document.getElementById('save').disabled = !rows.length;
+  document.getElementById('undo').disabled = !history.length;
+
+  if (!rows.length) return;
+
+  if (idx >= queue.length) {
+    app.innerHTML = `<div class="done">
+      <h2 style="margin:0 0 8px;font-size:17px">Triage done</h2>
+      <p style="margin:0 0 4px">${n} marked <strong>go</strong>${over ? ' — over the cap of ' + CAP : ''}.</p>
+      <p style="margin:0;font-size:13.5px;color:var(--muted)">
+        ${dirty ? 'Unsaved. Hit Save, then commit in GitHub Desktop.' : 'Saved. Commit in GitHub Desktop.'}</p>
+      </div>`;
+    return;
+  }
+
+  const r = queue[idx];
+  const chips = [];
+  if (r.fit_score) chips.push(`<span class="chip score">fit ${r.fit_score}</span>`);
+  if (r.location) chips.push(`<span class="chip">${escHTML(r.location)}</span>`);
+  if (r.bucket) chips.push(`<span class="chip">${escHTML(r.bucket)}</span>`);
+  if (r.deadline) chips.push(`<span class="chip ${urgent(r.deadline) ? 'urgent' : ''}">due ${escHTML(r.deadline)}</span>`);
+  if (r.visa_flag && r.visa_flag !== 'none') chips.push(`<span class="chip flag">visa: ${escHTML(r.visa_flag)}</span>`);
+  if (r.language_flag && r.language_flag !== 'none') chips.push(`<span class="chip flag">lang: ${escHTML(r.language_flag)}</span>`);
+  if (r.contact_match) chips.push(`<span class="chip score">contact: ${escHTML(r.contact_match)}</span>`);
+
+  const capWarn = n >= CAP
+    ? `<div class="warnbox">You're at ${n} go this week. Thursday is 60 minutes — past ${CAP}, drafts get skimmed rather than reviewed. Leave the rest as <code>new</code>; they survive to next week.</div>` : '';
+
+  app.innerHTML = `
+    <div class="card">
+      <p class="role">${escHTML(r.role_title || '(untitled role)')}</p>
+      <p class="employer">${escHTML(r.employer || '')}</p>
+      <div class="meta">${chips.join('')}</div>
+      ${r.score_breakdown ? `<div class="breakdown">${escHTML(r.score_breakdown)}</div>` : ''}
+      ${r.source_url ? `<a class="link" href="${escAttr(r.source_url)}" target="_blank" rel="noopener">${escHTML(r.source_url)}</a>` : '<em style="color:var(--muted);font-size:13px">no link — treat with suspicion</em>'}
+      ${capWarn}
+      <div class="actions">
+        <button class="go" id="btnGo">Go</button>
+        <button class="no" id="btnNo">No</button>
+      </div>
+      <div class="reasons" id="reasons">
+        ${REASONS.map(x => `<button data-r="${x}">${x}</button>`).join('')}
+      </div>
+      <div class="test">
+        Mark <strong>go</strong> only if all four hold:
+        <ol>
+          <li>I would take this job if offered on Friday.</li>
+          <li>I clear the bar plausibly — not perfectly.</li>
+          <li>No blocking flag.</li>
+          <li>I can name one thing that makes this firm different from the last one.</li>
+        </ol>
+      </div>
+      <div class="progress"><div style="width:${(idx / queue.length * 100).toFixed(1)}%"></div></div>
+    </div>`;
+
+  document.getElementById('btnGo').onclick = () => decide('go');
+  document.getElementById('btnNo').onclick = () => document.getElementById('reasons').classList.toggle('show');
+  document.querySelectorAll('#reasons button').forEach(b =>
+    b.onclick = () => decide('no', b.dataset.r));
+}
+
+function escHTML(s) { return String(s == null ? '' : s).replace(/[&<>]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[c])); }
+function escAttr(s) { return escHTML(s).replace(/"/g, '&quot;'); }
+
+/* ---------- wiring ---------- */
+document.getElementById('open').onclick = openFile;
+document.getElementById('save').onclick = save;
+document.getElementById('undo').onclick = undo;
+
+document.addEventListener('keydown', e => {
+  if (e.metaKey || e.ctrlKey || e.altKey) return;
+  if (/^(INPUT|TEXTAREA)$/.test(e.target.tagName)) return;
+  const k = e.key.toLowerCase();
+  if (k === 'g' && queue[idx]) decide('go');
+  else if (k === 'n' && queue[idx]) document.getElementById('reasons')?.classList.toggle('show');
+  else if (k === 'u') undo();
+  else if (k === 's') save();
+  else if (k === 'o' && queue[idx]?.source_url) window.open(queue[idx].source_url, '_blank', 'noopener');
+});
+
+window.addEventListener('beforeunload', e => { if (dirty) { e.preventDefault(); e.returnValue = ''; } });
+</script>
+</body>
+</html>

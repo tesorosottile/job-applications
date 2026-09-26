@@ -50,6 +50,7 @@ SUNDAY-DIGEST.md     Sunday: follow-ups, responses, pace — 15 min (+15 monthly
 profile/     cv-master.md, cv-variants/, evidence-bank.md, narratives.md, voice.md,
              filters.yaml (the rules engine), targets.md, contacts.md, targets-resolved.yaml
 pipeline/    tracker.csv — system of record, one row per posting
+tools/       triage.html — click-through Monday triage, reads and writes tracker.csv
 prompts/     LOADERS.md (what goes in the task config) + the four task prompts
 feedback/    my session notes — the only input to the monthly retro
 proposals/   retro output. I merge by hand. Nothing self-applies.
@@ -69,9 +70,13 @@ remove that dependency — worth doing before November.
 
 ## Marking rows
 
-Edit the `status` column in `pipeline/tracker.csv` via the github.com web editor or a
-plain-text editor. **Never Excel** — it reformats dates into a local format the tasks can't
-parse and mangles UTF-8 in employer names (`Öko-Institut`).
+**Open `tools/triage.html`** — a local page that reads `pipeline/tracker.csv`, deals the new
+rows one at a time with Go / No buttons, and writes back to the same file. Nothing leaves the
+machine and no server is involved.
+
+To edit the CSV by hand instead, use the github.com web editor or a plain-text editor.
+**Never Excel** — it reformats dates into a local format the tasks can't parse and mangles
+UTF-8 in employer names (`Öko-Institut`).
 
 `new` → `go` / `no` → `drafted` → `submitted` → `responded` / `interview` / `rejected`
 Plus: `expired`, `flagged-language`, `flagged-visa`, `no-response`.
