@@ -87,13 +87,14 @@
 <div class="wrap">
   <header>
     <h1>Monday Triage</h1>
-    <p class="sub">Reads and writes <code>pipeline/tracker.csv</code> directly. Nothing leaves this machine.</p>
+    <p class="sub">Reads and writes <code>pipeline/tracker.csv</code> directly, and saves after every click. Nothing leaves this machine.</p>
   </header>
 
   <div class="bar">
     <button id="open" class="primary">Open tracker.csv</button>
-    <button id="save" disabled>Save</button>
+    <button id="save" disabled title="Autosaves after every decision; this forces a save">Save now</button>
     <button id="undo" disabled>Undo</button>
+    <span id="saved" style="font-size:12.5px;color:var(--muted);opacity:.45"></span>
     <span class="counter" id="counter"></span>
   </div>
 
@@ -117,6 +118,28 @@ const CAP = 8;
 const REASONS = ['seniority','language','location','domain','wouldnt-take','too-senior','too-junior','no-angle'];
 
 let fileHandle = null, headers = [], rows = [], queue = [], idx = 0, history = [], dirty = false;
+let saveTimer = null;
+
+/* ---------- remember the file between visits ---------- */
+function idb() {
+  return new Promise((res, rej) => {
+    const r = indexedDB.open('triage', 1);
+    r.onupgradeneeded = () => r.result.createObjectStore('h');
+    r.onsuccess = () => res(r.result); r.onerror = () => rej(r.error);
+  });
+}
+async function rememberHandle(h) {
+  try { const db = await idb(); db.transaction('h','readwrite').objectStore('h').put(h,'tracker'); } catch(e){}
+}
+async function recallHandle() {
+  try {
+    const db = await idb();
+    return await new Promise(res => {
+      const q = db.transaction('h','readonly').objectStore('h').get('tracker');
+      q.onsuccess = () => res(q.result || null); q.onerror = () => res(null);
+    });
+  } catch(e) { return null; }
+}
 
 /* ---------- CSV ---------- */
 function parseCSV(text) {
@@ -153,6 +176,7 @@ async function openFile() {
       [fileHandle] = await window.showOpenFilePicker({
         types: [{ description: 'CSV', accept: { 'text/csv': ['.csv'] } }]
       });
+      await rememberHandle(fileHandle);
       load(await (await fileHandle.getFile()).text());
     } else {
       const inp = document.createElement('input');
@@ -198,7 +222,13 @@ function decide(status, reason) {
   history.push({ row: r, status: r.status, notes: r.notes });
   r.status = status;
   if (reason) r.notes = (r.notes ? r.notes + ' | ' : '') + reason;
-  dirty = true; idx++; render();
+  dirty = true; idx++; render(); autosave();
+}
+
+function autosave() {
+  if (!fileHandle) return;            // download mode: manual save only
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(() => save(true), 400);
 }
 function undo() {
   const h = history.pop(); if (!h) return;
@@ -207,13 +237,13 @@ function undo() {
 }
 
 /* ---------- save ---------- */
-async function save() {
+async function save(quiet) {
   const text = toCSV();
   try {
     if (fileHandle) {
       const w = await fileHandle.createWritable();
       await w.write(text); await w.close();
-      dirty = false; flash('Saved to tracker.csv');
+      dirty = false; if (!quiet) flash('Saved to tracker.csv'); else markSaved();
     } else {
       const a = document.createElement('a');
       a.href = URL.createObjectURL(new Blob([text], { type: 'text/csv' }));
@@ -222,6 +252,12 @@ async function save() {
     }
   } catch (e) { alert('Save failed: ' + e.message); }
   render();
+}
+function markSaved() {
+  const el = document.getElementById('saved');
+  if (!el) return;
+  el.textContent = 'saved ' + new Date().toLocaleTimeString([], {hour:'2-digit',minute:'2-digit',second:'2-digit'});
+  el.style.opacity = 1; setTimeout(() => el.style.opacity = .45, 1200);
 }
 function flash(msg) {
   const el = document.getElementById('counter');
@@ -246,7 +282,7 @@ function render() {
       <h2 style="margin:0 0 8px;font-size:17px">Triage done</h2>
       <p style="margin:0 0 4px">${n} marked <strong>go</strong>${over ? ' — over the cap of ' + CAP : ''}.</p>
       <p style="margin:0;font-size:13.5px;color:var(--muted)">
-        ${dirty ? 'Unsaved. Hit Save, then commit in GitHub Desktop.' : 'Saved. Commit in GitHub Desktop.'}</p>
+        ${dirty ? 'Unsaved — hit Save now, then commit in GitHub Desktop.' : 'Saved. Commit in GitHub Desktop, and Thursday drafts every <strong>go</strong> row automatically.'}</p>
       </div>`;
     return;
   }
@@ -302,6 +338,32 @@ function escAttr(s) { return escHTML(s).replace(/"/g, '&quot;'); }
 
 /* ---------- wiring ---------- */
 document.getElementById('open').onclick = openFile;
+
+/* try to reopen last Monday's file with no picker */
+(async function tryReconnect() {
+  if (!window.showOpenFilePicker) return;
+  const h = await recallHandle();
+  if (!h) return;
+  const app = document.getElementById('app');
+  let perm = 'prompt';
+  try { perm = await h.queryPermission({ mode: 'readwrite' }); } catch (e) { return; }
+  if (perm === 'granted') {
+    fileHandle = h;
+    try { load(await (await h.getFile()).text()); return; } catch (e) { return; }
+  }
+  app.innerHTML = `<div class="empty">
+      <p style="margin-bottom:14px">Last opened <strong>${h.name}</strong>.</p>
+      <button class="primary" id="reconnect">Reopen ${h.name}</button>
+      <p style="font-size:13px;margin-top:16px">Browsers require one click to re-grant file access after a restart.</p>
+    </div>`;
+  document.getElementById('reconnect').onclick = async () => {
+    try {
+      const p = await h.requestPermission({ mode: 'readwrite' });
+      if (p !== 'granted') return;
+      fileHandle = h; load(await (await h.getFile()).text());
+    } catch (e) { alert('Could not reopen: ' + e.message); }
+  };
+})();
 document.getElementById('save').onclick = save;
 document.getElementById('undo').onclick = undo;
 
