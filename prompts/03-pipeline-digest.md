@@ -17,3 +17,11 @@ Read `pipeline/tracker.csv` and give me a short digest. No files, no commits, no
 5. **One thing** — the single highest-value action for the coming week.
 
 Keep it under 300 words. If nothing needs attention in a section, say "nothing" and move on.
+
+---
+
+## Changelog
+
+| Date | Change | From proposal |
+|---|---|---|
+| 2026-09-26 | Paths corrected config/ to profile/; loader indirection added | — |

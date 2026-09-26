@@ -1,7 +1,7 @@
 # Target Universe
 
 Firm names only. **Career-page URLs are resolved and cached by the first sourcing run** into
-`config/targets-resolved.yaml` — I have not written URLs here because guessed URLs are worse
+`profile/targets-resolved.yaml` — I have not written URLs here because guessed URLs are worse
 than none. On run #1, verify each and drop any that 404 or have no relevant openings.
 
 Veto freely. A shorter honest list beats a long aspirational one.

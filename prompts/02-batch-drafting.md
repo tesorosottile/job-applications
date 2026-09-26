@@ -42,3 +42,11 @@ You are drafting job applications for Gianluigi Sottile.
 
 **Output to me:** one line per application — folder path, word count, evidence IDs used, and
 any flag. Then list anything you could not draft and why.
+
+---
+
+## Changelog
+
+| Date | Change | From proposal |
+|---|---|---|
+| 2026-09-26 | Paths corrected config/ to profile/; loader indirection added | — |
