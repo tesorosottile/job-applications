@@ -14,3 +14,6 @@ First principles extracted by `/learn` from Gianluigi's feedback on drafts (CLAU
 ---
 
 <!-- lessons below this line -->
+- The letter is about me: a firm's article or report gets at most one short clause, never the subject of the opening sentence. (2026-10-09, Aurora Energy Research — Advisory Analyst, Italian Power Markets)
+- Write the opener so a non-specialist understands it on first read: no acronyms, figures or market mechanics in it. (2026-10-09, Aurora Energy Research — Advisory Analyst, Italian Power Markets)
+- Introduce the firm reference through my own reason for caring about the work, taken from the evidence bank; if the bank has no such reason, say so in the Notes instead of inventing one. (2026-10-09, Aurora Energy Research — Advisory Analyst, Italian Power Markets)
