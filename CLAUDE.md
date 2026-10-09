@@ -32,10 +32,16 @@ the phone couldn't see anything; the network file had one name in it.
 | **Dashboard** (built ✅) | Phone-first page: Today (to-dos, cycle checklist, pace, lessons), Triage (Go / No / Later cards), Pipeline, People, + Posting | https://claude.ai/artifact/CRhTGa5cfCj58tJGTEhbQi |
 | **System of record** (seeded ✅) | The dashboard's built-in database (collections below) | same artifact, via the `ArtifactData` tool |
 | **Drafts** (folder ✅) | One Google Doc per application (CV + letter), edited on Android, exported to PDF | Google Drive folder `Job Applications – Drafts`, id `1dy70HTpBszdbAzOltKhXeVqo8jtQzdaU` |
-| **Profile** (to rebuild) | CV master, evidence bank, voice, targets, filters, lessons | this repo, `profile/` |
-| **Sweep** (to build) | The only scheduled task: Monday early morning, cloud, no laptop | scheduled task + `prompts/sweep.md` |
-| **/draft** (to build) | On demand from the phone: drafts every Go row into Google Docs | account-level skill |
-| **/learn** (to build) | On demand: harvests his feedback on drafts into `profile/lessons.md` | account-level skill |
+| **Profile** (built ✅) | CV master, evidence bank, voice, targets, filters, lessons | this repo, `profile/` |
+| **Sweep** (built ✅) | The only scheduled task: Monday early morning, cloud, no laptop | routine `trig_01Ka8jfcRGLdsdVkdmwUWZdc` + `prompts/sweep.md` |
+| **/draft** (built ✅) | On demand from the phone: drafts every Go row into Google Docs | repo skill `.claude/skills/draft/` |
+| **/learn** (built ✅) | On demand: harvests his feedback on drafts into `profile/lessons.md` | repo skill `.claude/skills/learn/` |
+
+**Running /draft and /learn from the phone:** Claude app → **Code** tab → new session on
+`tesorosottile/job-applications` (environment *Default*) → type `/draft` or `/learn`. They're
+repo (project) skills, not account-level: no `propose_skills` tool was available on 2026-10-09,
+and a cloud Code session is the surface proven to reach both the dashboard database and Drive.
+Decided with Gianluigi 2026-10-09.
 
 ## 3. Targeting rules (encode in `profile/filters.yaml` and `profile/targets.md`)
 
@@ -134,6 +140,13 @@ copying fixes.
 - Merge near-duplicate lessons; keep the file short enough to read in two minutes.
 
 ## 8. Build plan for what's left (do these in order, verify each)
+
+> **Status 2026-10-09:** steps 1–6 done (step 4–5 delivered as repo skills, see §2). Verified:
+> a scheduled cloud run clones the repo, reads `ArtifactData`, and sends a push notification;
+> the Drive connector's `read_file_content` supports `includeComments` on Google Docs. The
+> cloud environment (*Default*, `env_01CQESBwcsiNTZNXqJLDoeBB`) must have **Full** network
+> access or the sweep can't reach career sites (first fire, 2026-10-09, was blocked at
+> *Trusted*). Git on the laptop has no GitHub credentials: push from GitHub Desktop.
 
 1. **Rebuild `profile/` from the archive.** Copy unchanged: `cv-master.md`, `cv-variants/`,
    `evidence-bank.md`, `narratives.md`, `voice.md`. Rewrite: `filters.yaml` and `targets.md` per
