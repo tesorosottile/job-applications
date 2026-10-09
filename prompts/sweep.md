@@ -68,6 +68,12 @@ firms with count ≥ 3 and list them in the summary for removal.
 A career page that's JS-only or blocked: try the ATS endpoint or a search engine's indexed copy;
 if nothing works, count it as unreachable and move on. Don't fall back to guessing.
 
+**Network check.** If the first 5 fetches of *different* domains all fail with connection
+errors (ENOTFOUND, proxy CONNECT 403, `connect_rejected`), the environment's network is blocked,
+not the sites. Stop, write nothing, don't count those firms as unreachable, and end with
+`SWEEP FAILED: network blocked (<one example error>)`. Name any existing row whose `deadline`
+falls in the next 7 days on the line before it.
+
 ### Every candidate must pass all of these before it becomes a row
 
 1. **In one of the five families** (`filters.yaml` → `families`). If not, drop it and count it
