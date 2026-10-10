@@ -73,8 +73,13 @@ german:
 other_languages: "French / Spanish / Dutch etc. required at working level → say so in `why`
                   (e.g. 'French fluency required'). No score change, no exclusion."
 
-eligibility: "cohort gates, degree class, right-to-work: score seniority 0 where §role_fit says so
-              and state the gate in `why` so the card shows what's being overridden."
+eligibility: "cohort gates, degree class, right-to-work / 'no visa sponsorship', 'N+ years in a
+              technical role': KEEP THE ROW. Score seniority 0 where §role_fit says so and state the
+              gate in `why` (e.g. 'States no UK sponsorship', '1+ yrs technical required') so the
+              card shows what's being overridden. He decides, not the sweep."
+legal_bar: "the only eligibility drop: a role legally reserved for a category he isn't in (e.g.
+            Italy's L. 68/99 protected categories, a nationality-restricted civil-service post).
+            Drop it and name it in the summary."
 
 # ── Culture: his gut call ────────────────────────────────────────────────────
 tone: "1–2 VERBATIM sentences from the posting or the firm's careers page showing how the firm

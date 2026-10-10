@@ -46,8 +46,14 @@ Leave rows in `drafted`, `submitted`, `interview`, `rejected`, `no-response`, `n
 
 ## 2. Find new postings
 
-Work through sources in this order and stop at roughly **60 candidate postings examined** or
-when you've covered the list, whichever first. Quality over coverage.
+Work through sources in this order until roughly **60 candidate postings have been examined**
+or the list is covered. There's no time pressure: the run is unattended at 05:50 and a thin run
+costs him a week. **Don't write rows or report until you've attempted every source in steps 1
+and 2 and at least 15 rows from steps 3–5.** A run that examined fewer than 40 candidates must
+say why in the details block (e.g. "boards empty"), with counts per step.
+
+The only reasons to drop a candidate are `filters.yaml` → `out_of_scope` and `legal_bar`.
+Visa, cohort, experience and language gaps are **flags on a kept row**, never drops.
 
 1. **Italy, all five families**: every Italy row in `targets.md`, plus web searches such as
    `junior consultant Milano`, `consulenza direzionale Napoli`, `analista energia Roma`,
